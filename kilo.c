@@ -1,3 +1,15 @@
+/*** TODO ***/
+/*
+1. ~~No Git; Add Git~~ Git added :)
+2. New line tabbing/spacing
+3. ~~Search Highlighting~~ added functionality to define foreground and background colors
+						   Now need to add support for 256 colors ("\xb[38;5;{ID};48;5;{ID}")
+4. Ctrl-(arrowkeys, delete, backspace)
+5. Undo/Redo
+*/
+
+
+
 /*** includes ***/
 
 #define _DEFAULT_SOURCE
@@ -51,6 +63,14 @@ enum editorHighlight {
 
 #define HL_HIGHLIGHT_NUMBERS (1<<0)
 #define HL_HIGHLIGHT_STRINGS (1<<1)
+
+#define MLCOMMENT_COL 3649
+#define KEYWORD1_COL 3349
+#define KEYWORD2_COL 3249
+#define STRING_COL 3549
+#define NUMBER_COL 3149
+#define MATCH_COL 3744
+#define DEFAULT_COL 3749
 
 /*** data ***/
 
@@ -358,14 +378,23 @@ void editorUpdateSyntax(erow *row) {
 int editorSyntaxToColor(int hl) {
 	switch (hl) {
 		case HL_COMMENT:
-		case HL_MLCOMMENT: return 36;
-		case HL_KEYWORD1: return 33;
-		case HL_KEYWORD2: return 32;
-		case HL_STRING: return 35;
-		case HL_NUMBER: return 31;
-		case HL_MATCH: return 34;
-		default: return 37;
+		case HL_MLCOMMENT: return MLCOMMENT_COL;
+		case HL_KEYWORD1: return KEYWORD1_COL;
+		case HL_KEYWORD2: return KEYWORD2_COL;
+		case HL_STRING: return STRING_COL;
+		case HL_NUMBER: return NUMBER_COL;
+		case HL_MATCH: return MATCH_COL;
+		default: return DEFAULT_COL;
 	}
+}
+
+int colorToFGBG(int color, int n) {
+	if (n < 1){
+	color /= 100;
+	} else if (n >= 1){
+		color -= ((color / 100) * 100);
+	}
+	return color;
 }
 
 void editorSelectSyntaxHighlight() {
@@ -774,17 +803,17 @@ void editorDrawRows(struct abuf *ab) {
 			for (j = 0; j < len; j++) {
 				if (iscntrl(c[j])) {
 					char sym = (c[j] <+ 26) ? '@' + c[j] : '?';
-					abAppend(ab, "\x1b[7m", 4);
+					abAppend(ab, "\x1b[2m", 4);
 					abAppend(ab, &sym, 1);
 					abAppend(ab, "\x1b[m", 3);
 					if (current_color != -1) {
-						char buf[16];
+						char buf[20];
 						int clen = snprintf(buf, sizeof(buf), "\x1b[%dm", current_color);
 						abAppend(ab, buf, clen);
 					}
 				 } else if (hl[j] == HL_NORMAL) {
 					if (current_color != -1) {
-						abAppend(ab, "\x1b[39m", 5);
+						abAppend(ab, "\x1b[39;49m", 8);
 						current_color = -1;
 					}
 					abAppend(ab, &c[j], 1);
@@ -792,14 +821,14 @@ void editorDrawRows(struct abuf *ab) {
 					int color = editorSyntaxToColor(hl[j]);
 					if (color != current_color) {
 						current_color = color;
-						char buf[16];
-						int clen = snprintf(buf, sizeof(buf), "\x1b[%dm", color);
+						char buf[20];
+						int clen = snprintf(buf, sizeof(buf), "\x1b[%i;%im", colorToFGBG(current_color, 0), colorToFGBG(current_color, 1));
 						abAppend(ab, buf, clen);
 					}
 					abAppend(ab, &c[j], 1);
 				}
 			}
-			abAppend(ab, "\x1b[39m", 5);
+			abAppend(ab, "\x1b[39;49m", 8);
         }
 
         abAppend(ab, "\x1b[K", 3);
