@@ -1,14 +1,10 @@
-/*** TODO ***/
-/*
+/*** TODO ***//*
+## Version 0.0.2
 1. ~~No Git; Add Git~~ Git added :)
-2. New line tabbing/spacing
-3. ~~Search Highlighting~~ added functionality to define foreground and background colors
-						   Now need to add support for 256 colors ("\xb[38;5;{ID};48;5;{ID}")
-4. Ctrl-(arrowkeys, delete, backspace)
-5. Undo/Redo
+3. ~~Search Highlighting added functionality to define foreground and background colors~~
+						   Need to integrate DEFAULT_COL to end of line color reset (Line 832)
+8. ~~Autoclose "[]{}()"~~
 */
-
-
 
 /*** includes ***/
 
@@ -47,7 +43,7 @@ enum editorKey {
     HOME_KEY,
     END_KEY,
     PAGE_UP,
-    PAGE_DOWN
+    PAGE_DOWN,
 };
 
 enum editorHighlight {
@@ -773,6 +769,7 @@ void editorScroll() {
 }
 
 void editorDrawRows(struct abuf *ab) {
+	
     int y;
     for (y = 0; y < E.screenrows; y++) {
         int filerow = y + E.rowoff;
@@ -837,7 +834,7 @@ void editorDrawRows(struct abuf *ab) {
 }
 
 void editorDrawStatusBar(struct abuf *ab) {
-    abAppend(ab, "\x1b[7m", 4);
+    abAppend(ab, "\x1b[3;7m", 6);
     char status[80], rstatus[80];
     int len = snprintf(status, sizeof(status), "%.20s - %d lines %s",
         E.filename ? E.filename : "[No Name]", E.numrows, 
@@ -1046,9 +1043,26 @@ void editorProcessKeypress() {
             editorMoveCursor(c);
             break;
 
-        case CTRL_KEY('l'):
-        case '\x1b':
-            break;
+		case '{':
+			editorInsertChar('{');
+			editorInsertChar('}');
+			editorMoveCursor(ARROW_LEFT);
+			break;
+
+		case '[':
+			editorInsertChar('[');
+			editorInsertChar(']');
+			editorMoveCursor(ARROW_LEFT);
+			break;
+
+		case '(':
+			editorInsertChar('(');
+			editorInsertChar(')');
+			editorMoveCursor(ARROW_LEFT);
+
+		case CTRL_KEY('l'):
+		case '\x1b':
+			break;
 
         default:
             editorInsertChar(c);
