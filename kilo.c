@@ -1,13 +1,3 @@
-/*** TODO ***//*
-## Version 0.0.2
-1. ~~No Git; Add Git~~ Git added :)
-3. ~~Search Highlighting added functionality to define foreground and background colors~~
-						   Need to integrate DEFAULT_COL to end of line color reset (Line 832)
-8. ~~Autoclose "[]{}()"~~
-*/
-
-/*** includes ***/
-
 #define _DEFAULT_SOURCE
 #define _BSD_SOURCE
 #define _GNU_SOURCE
@@ -27,7 +17,7 @@
 
 /*** defines ***/
 
-#define KILO_VERSION "0.0.1"
+#define KILO_VERSION "0.0.2"
 #define KILO_TAB_STOP 4
 #define KILO_QUIT_TIMES 3
 
